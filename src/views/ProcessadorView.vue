@@ -23,7 +23,7 @@
         </div>
     </div>
     <hr>
-    <div v-if="this.slots > 0 && this.qtdMemo > 0">
+    <div v-if="this.slots > 0 && this.qtdMemo > 0" style="margin-bottom: 40px">
         <h2>Informe a quantidade e a(s) memória(s) que deseja integrar ao computador</h2>
         <div>
             quantidade permitida: {{ this.qtdMemo }} GB <br>
@@ -34,15 +34,33 @@
             Slot nº {{ index + 1 }}
             <div v-for="memoria in memorias" :key="memoria.id">
                 descrição: <strong>{{ memoria.produto }}</strong><br>
-                <!-- <div v-for="memo in memoria.tamanho" :key="memo"> -->
-                    <input type="radio" :value="memoria.tamanho[0]" :name="'memo'+index" @change="calculaMemo(memoria.tamanho[0], index)"> {{ memoria.tamanho[0] }} GB
-                    <input type="radio" :value="memoria.tamanho[1]" :name="'memo'+index" @change="calculaMemo(memoria.tamanho[1], index)"> {{ memoria.tamanho[1] }} GB
-                    <input type="radio" :value="memoria.tamanho[2]" :name="'memo'+index" @change="calculaMemo(memoria.tamanho[2], index)"> {{ memoria.tamanho[2] }} GB
-                    <input type="radio" :value="memoria.tamanho[3]" :name="'memo'+index" @change="calculaMemo(memoria.tamanho[3], index)"> {{ memoria.tamanho[3] }} GB
-                    <input type="radio" :value="memoria.tamanho[4]" :name="'memo'+index" @change="calculaMemo(memoria.tamanho[4], index)"> {{ memoria.tamanho[4] }} GB
-                <!-- </div> -->
+                    <input type="radio" :value="0"  :name="'memo'+index" @change="paramsMemo(0, index)"> Sem Memória
+                    <input type="radio" :value="memoria.tamanho[0]" :name="'memo'+index" @change="paramsMemo(memoria.tamanho[0], index)"> {{ memoria.tamanho[0] }} GB
+                    <input type="radio" :value="memoria.tamanho[1]" :name="'memo'+index" @change="paramsMemo(memoria.tamanho[1], index)"> {{ memoria.tamanho[1] }} GB
+                    <input type="radio" :value="memoria.tamanho[2]" :name="'memo'+index" @change="paramsMemo(memoria.tamanho[2], index)"> {{ memoria.tamanho[2] }} GB
+                    <input type="radio" :value="memoria.tamanho[3]" :name="'memo'+index" @change="paramsMemo(memoria.tamanho[3], index)"> {{ memoria.tamanho[3] }} GB
+                    <input type="radio" :value="memoria.tamanho[4]" :name="'memo'+index" @change="paramsMemo(memoria.tamanho[4], index)"> {{ memoria.tamanho[4] }} GB
             </div>
             <hr>
+        </div>
+        <div v-if="this.totalMemo <= this.qtdMemo && this.totalMemo  > 0">
+            <button @click="selecPlacaVideo()">Selecionar Placa</button>
+        </div>
+    </div>
+
+    <div v-if="placaVAba">
+        <h2>Selecione a placa de vídeo</h2>
+        <div v-for="placa in this.placasVideo" :key="placa.id">
+            <input type="radio" v-model="placaV" name="placaVideo" :value="placa.id"> {{ placa.Produto }}
+        </div>
+        <div style="margin-top: 50px">
+            <label>Nome do cliente:</label>
+            <div>
+                <input type="text" v-model="nomeCliente">
+            </div>
+        </div>
+        <div v-if="this.nomeCliente != ''">
+            <button @click="salvarPedido()">Salvar</button>
         </div>
     </div>
 
@@ -60,14 +78,18 @@
         data(){
             return {
                 processadores: [],
-                placasMae:[],
+                placasMae: [],
                 memorias: [],
+                placasVideo: [],
                 proc: null,
                 placaMae: null,
+                placaV: null,
                 slots: 0,
                 qtdMemo: 0,
-                qtdMemoSelec: [0 , 0],
-                totalMemo: 0
+                qtdMemoSelec: undefined,
+                totalMemo: 0,
+                placaVAba: false,
+                nomeCliente: ""
             }
         },
         methods: {
@@ -79,19 +101,56 @@
                 })
             },
             selecPlac(slots, memoria){
+                this.memorias = []
                 this.slots = slots;
                 this.qtdMemo = memoria
+                this.qtdMemoSelec = new Array()
+
+                for(let i = 0; i < this.qtdMemoSelec.length -1; i ++){
+                    this.qtdMemoSelec[i] = 0;
+                }
+
                 axios.get("http://localhost:3000/memorias").then(res =>{
                     this.memorias = res.data
                 }).catch(err =>{
                    console.log(err);
                 })
             },
-            calculaMemo(value, index){
-                this.qtdMemoSelec[index] = parseInt(value)
-                this.totalMemo = this.qtdMemoSelec[0] + this.qtdMemoSelec[1]
+            paramsMemo(value, index){
+                this.qtdMemoSelec[parseInt(index)] = parseInt(value)
+
+                this.totalMemo = this.qtdMemoSelec.reduce((partialSum, a) => partialSum + a, 0)
+                if (this.totalMemo > this.qtdMemo){
+                    alert("A quantidate de memória selecionada excede a ao limite de memória permitida da placa ")
+                    this.memorias = []
+                    this.totalMemo = 0
+                    this.selecPlac(this.slots, this.qtdMemo)
+                }
                 
+            },
+            selecPlacaVideo(){
+                axios.get("http://localhost:3000/placasVideo").then(res =>{
+                    this.placasVideo = res.data;
+                    this.placaVAba = true
+                }).catch(err =>{
+                   console.log(err);
+                })
+            },
+            salvarPedido(){
+                console.log(this.proc);
+                console.log(this.placaMae);
+                console.log(this.qtdMemoSelec);
+                console.log(this.placaV);
+                console.log(this.nomeCliente);
+
+                axios.post("http://localhost:3000/salvarPedido", {processador: this.proc, placasMae: this.placaMae, memorias: this.qtdMemoSelec, placaVideo: this.placaV, cliente: this.nomeCliente}).then(res =>{
+                    console.log(res);
+                }).catch(err =>{
+                   console.log(err);
+                })
             }
+            
+
         }
     }
 </script>
