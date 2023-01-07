@@ -5,7 +5,7 @@
     </div>
     <hr>
     <div v-for="placa in placasMae" :key="placa.id">
-        <input type="radio" v-model="placaMae" :value="placa.id" name="placaMae" @change="selecPlac(placa.qtdSlots, placa.totalMemoria)"> {{ placa.produto }}
+        <input type="radio" v-model="placaMae" :value="placa.id" name="placaMae" @change="selecPlac(placa.qtdSlots, placa.totalMemoria, placa.videoIntegrado)"> {{ placa.produto }}
         <div>
             Detalhes:
             <div>
@@ -19,6 +19,11 @@
             <label>Processadores suportados:</label>
             <div v-for="p in placa.processador" :key="p.id">
                 <strong>{{ p }}</strong>
+            </div>
+
+            <label>Video Intergrado:</label> {{ placa.videoIntegrado ? "Sim" : "Não" }}
+            <div>
+
             </div>
         </div>
     </div>
@@ -49,18 +54,20 @@
     </div>
 
     <div v-if="placaVAba">
-        <h2>Selecione a placa de vídeo</h2>
+        <h2>Selecione a placa de vídeo - {{ this.videoIntegrado ? 'Opcional' : 'Obrigatório' }}</h2>
         <div v-for="placa in this.placasVideo" :key="placa.id">
             <input type="radio" v-model="placaV" name="placaVideo" :value="placa.id"> {{ placa.Produto }}
         </div>
-        <div style="margin-top: 50px">
-            <label>Nome do cliente:</label>
-            <div>
-                <input type="text" v-model="nomeCliente">
+        <div v-if="this.videoIntegrado || this.placaV != null">
+            <div style="margin-top: 50px">
+                <label>Nome do cliente:</label>
+                <div>
+                    <input type="text" v-model="nomeCliente">
+                </div>
             </div>
-        </div>
-        <div v-if="this.nomeCliente != ''">
-            <button @click="salvarPedido()">Salvar</button>
+            <div v-if="this.nomeCliente != ''">
+                <button @click="salvarPedido()">Salvar</button>
+            </div>
         </div>
     </div>
 
@@ -89,7 +96,8 @@
                 qtdMemoSelec: undefined,
                 totalMemo: 0,
                 placaVAba: false,
-                nomeCliente: ""
+                nomeCliente: "",
+                videoIntegrado: false
             }
         },
         methods: {
@@ -100,11 +108,12 @@
                     console.log(err);
                 })
             },
-            selecPlac(slots, memoria){
+            selecPlac(slots, memoria, videoIntegrado){
                 this.memorias = []
                 this.slots = slots;
                 this.qtdMemo = memoria
                 this.qtdMemoSelec = new Array()
+                this.videoIntegrado = videoIntegrado
 
                 for(let i = 0; i < this.qtdMemoSelec.length -1; i ++){
                     this.qtdMemoSelec[i] = 0;
@@ -137,12 +146,6 @@
                 })
             },
             salvarPedido(){
-                console.log(this.proc);
-                console.log(this.placaMae);
-                console.log(this.qtdMemoSelec);
-                console.log(this.placaV);
-                console.log(this.nomeCliente);
-
                 axios.post("http://localhost:3000/salvarPedido", {processador: this.proc, placasMae: this.placaMae, memorias: this.qtdMemoSelec, placaVideo: this.placaV, cliente: this.nomeCliente}).then(res =>{
                     console.log(res);
                 }).catch(err =>{
