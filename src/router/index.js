@@ -1,6 +1,6 @@
 import { createRouter, createWebHistory } from 'vue-router'
 import PedidoView from '../views/PedidoView.vue'
-import ProcessadorView from '../views/ProcessadorView.vue'
+import CadastroView from '../views/CadastroView.vue'
 
 const routes = [
   {
@@ -9,9 +9,9 @@ const routes = [
     component: PedidoView
   },
   {
-    path: '/processadores',
-    name: 'processadores',
-    component: ProcessadorView
+    path: '/novoPedido',
+    name: 'novoPedido',
+    component: CadastroView
   },
 ]
 

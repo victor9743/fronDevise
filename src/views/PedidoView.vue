@@ -1,24 +1,24 @@
 <template>
     <div class="container">
-        <h2>Tabela de pedidos</h2>
-        <div class="table-container column .is-half">
-            <table class="table table is-bordered">
+        <div id="tituloPedido">
+            <h2>Tabela de pedidos</h2>
+        </div>
+
+        <div class="table-container column">
+            <table class="table table is-bordered" id="tabela">
                 <thead>
-                    <th>id</th>
-                    <th>pedido</th>
-                    <th>detalhes</th>
+                    <th id="colunaId">id</th>
+                    <th id="colunaPedido">pedido</th>
+                    <th id="colunaOpcao">Opção</th>
                 </thead>
-                <tbody>
+                <tbody id="corpoTabela">
                     <tr v-for="pedido in pedidos" :key="pedido.id">
                         <td>{{pedido.id}}</td>
                         <td>{{pedido.cliente}}</td>
-                        <td><button @click="detalhesPedido(pedido.id)">Detalhes</button></td>
+                        <td><button class="button is-small is-link" @click="detalhesPedido(pedido.id)">Detalhes</button></td>
                     </tr>
                 </tbody>
             </table>
-
-            <router-link to="/processadores">Cadastrar Pedido</router-link>
-
             <div :class="{modal: true, 'is-active': this.mostrarPedido }">
                 <div class="modal-background"></div>
                 <div class="modal-content">
@@ -27,16 +27,61 @@
                             <div class="content" v-html="this.Detalhepedido" id="detalhes">
                             </div>
                         </div>
-                        <div class="card-content">
-                            <button @click="hideModal()">Fechar</button>
+                        <div class="card-content" style="justify-content: flex-end; display: flex;">
+                            <button class="button is-link is-light" @click="hideModal()">Fechar</button>
                         </div>
                     </div>
                 </div>
                 <button class="modal-close is-large" aria-label="close"></button>
             </div>
         </div>
+        <div id="divCadastrar">
+            <router-link to="/novoPedido" class="button is-primary">Cadastrar Pedido</router-link>
+        </div>
     </div>
 </template>
+<style scoped>
+    .modal-close{
+        display: none;
+    }
+
+    #detalhes{
+        text-align: left;
+    }
+
+    #corpoTabela{
+        text-align: left;
+    }
+
+    #tabela{
+        margin-top: 10px;
+    }
+
+    #colunaId {
+        width: 1%;
+    }
+
+    #colunaPedido {
+        width: 90%;
+    }
+
+    #colunaOpcao {
+        width: 9%;
+    }
+
+    #tituloPedido {
+        margin-top: 50px;
+        font-weight: bold;
+        font-size: 20px;
+    }
+
+    #divCadastrar {
+        justify-content: flex-end;
+        display: flex;
+        margin-bottom: 5%;
+    }
+</style>
+
 <script>
     import axios from 'axios';
     export default {
@@ -55,7 +100,6 @@
                 this.mostrarPedido = true
 
                 axios.get("http://localhost:3000/detalhesPedido",{params: {id: pedido} }).then(res =>{
-                    console.log(res.data[5])
                     this.Detalhepedido = "<div id='detalhes'>"+
                                 "<h2 style='text-align:center'>Detalhes do Pedido</h2><hr>"+
                                 "<div class='columns is-flex'>"+
@@ -115,13 +159,3 @@
         
     }
 </script>
-
-<style scoped>
-    .modal-close{
-        display: none;
-    }
-
-    #detalhes{
-        text-align: left;
-    }
-</style>
